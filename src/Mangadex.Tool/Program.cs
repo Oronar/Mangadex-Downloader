@@ -1,5 +1,8 @@
 ﻿using Mangadex.Api;
 using System;
+using System.IO;
+using System.IO.Compression;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Mangadex.Tool
@@ -13,6 +16,14 @@ namespace Mangadex.Tool
 
 			Console.WriteLine(manga.Manga.Title);
 			Console.WriteLine(manga.Manga.Description);
+
+			var chapterDetail = await mangadex.GetChapter(manga.Chapters.First().Id);
+
+			using var zipToOpen = new FileStream(@"test.cbz", FileMode.Create);
+			using var archive = new ZipArchive(zipToOpen, ZipArchiveMode.Update);
+			var pageFile = archive.CreateEntry(chapterDetail.Pages.First());
+			using var writer = pageFile.Open();
+			mangadex.GetPage(chapterDetail.Hash, chapterDetail.Pages.First(), writer);
 		}
 	}
 }
