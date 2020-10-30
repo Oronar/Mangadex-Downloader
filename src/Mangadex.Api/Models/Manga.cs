@@ -12,7 +12,7 @@ namespace Mangadex.Api.Models
 		public string Description { get; set; }
 
 		[JsonProperty("cover_url")]
-		public string CoverUrl { get; set; }
+		public string CoverPath { get; set; }
 
 		[JsonProperty("alt_names")]
 		public IEnumerable<string> AlternateTitles { get; set; }
@@ -46,6 +46,7 @@ namespace Mangadex.Api.Models
 		[JsonProperty("hentai")]
 		public bool IsHentai { get; set; }
 
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "<Pending>")]
 		public Dictionary<string, string> Links { get; set; }
 
 		public IEnumerable<Relation> Related { get; set; }

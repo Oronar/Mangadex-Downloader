@@ -11,8 +11,8 @@ namespace Mangadex.Tool
 			var mangadex = new MangadexApi();
 			var manga = await mangadex.GetManga(3484);
 
-			Console.WriteLine(manga.Title);
-			Console.WriteLine(manga.Description);
+			Console.WriteLine(manga.Manga.Title);
+			Console.WriteLine(manga.Manga.Description);
 		}
 	}
 }

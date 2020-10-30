@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Mangadex.Api.Models;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -31,7 +32,5 @@ namespace Mangadex.Api.JsonConverters
 		{
 			throw new NotImplementedException();
 		}
-
-
 	}
 }
