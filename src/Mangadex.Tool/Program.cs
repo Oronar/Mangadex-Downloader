@@ -1,29 +1,26 @@
-﻿using Mangadex.Api;
-using System;
-using System.IO;
-using System.IO.Compression;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.CommandLine;
+using System.CommandLine.Invocation;
 
 namespace Mangadex.Tool
 {
 	public static class Program
 	{
-		public static async Task Main(string[] args)
+		public static int Main(string[] args)
 		{
-			var mangadex = new MangadexApi();
-			var manga = await mangadex.GetManga(3484);
+			var rootCommand = new RootCommand
+			{
+				new Argument<int>(name: "manga-id", description: "Mangadex ID"),
+				new Option<int>("--volume", getDefaultValue: () => 1, description: "Volume number"),
+				new Option<int>("--chapter", getDefaultValue: () => 1, description: "Chapter number"),
+				new Option<string>("--language", getDefaultValue: () => "English", description: "Release language"),
+				new Option<string>("--group", getDefaultValue: () => null, description: "Release group")
+			};
 
-			Console.WriteLine(manga.Manga.Title);
-			Console.WriteLine(manga.Manga.Description);
+			rootCommand.Description = "Download a manga from Mangadex";
 
-			var chapterDetail = await mangadex.GetChapter(manga.Chapters.First().Id);
+			rootCommand.Handler = CommandHandler.Create<int, int, int, string, string>(CbzDownloader.Download);
 
-			using var zipToOpen = new FileStream(@"test.cbz", FileMode.Create);
-			using var archive = new ZipArchive(zipToOpen, ZipArchiveMode.Update);
-			var pageFile = archive.CreateEntry(chapterDetail.Pages.First());
-			using var writer = pageFile.Open();
-			mangadex.GetPage(chapterDetail.Hash, chapterDetail.Pages.First(), writer);
+			return rootCommand.InvokeAsync(args).Result;
 		}
 	}
 }

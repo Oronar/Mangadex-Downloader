@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Mangadex.Tool": {
+      "commandName": "Project",
+      "commandLineArgs": "3484"
+    }
+  }
+}

@@ -35,11 +35,11 @@ namespace Mangadex.Api
 			return response;
 		}
 
-		public void GetPage(string serverHash, string pageId, Stream stream)
+		public void GetPage(string server, string serverHash, string pageId, Stream stream)
 		{
 			var client = new RestClient(MangadexApiUrl);
 
-			var request = new RestRequest($"data/{serverHash}/{pageId}");
+			var request = new RestRequest($"{server}{serverHash}/{pageId}");
 			request.ResponseWriter = responseStream => responseStream.CopyTo(stream);
 
 			client.DownloadData(request);
