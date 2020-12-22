@@ -1,4 +1,4 @@
-﻿namespace Mangadex.Api.Models
+﻿namespace Mangadex.Api.Models.Mangas
 {
 	public class Rating
 	{

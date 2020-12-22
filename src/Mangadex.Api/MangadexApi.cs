@@ -1,6 +1,10 @@
 ﻿using Mangadex.Api.Models;
+using Mangadex.Api.Models.Chapters;
+using Mangadex.Api.Models.Groups;
+using Mangadex.Api.Models.Mangas;
 using RestSharp;
 using RestSharp.Serializers.NewtonsoftJson;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -9,40 +13,60 @@ namespace Mangadex.Api
 	public class MangadexApi
 	{
 		private readonly string MangadexApiUrl = "https://mangadex.org/";
+		private readonly IRestClient RestClient;
 
-		public async Task<MangaResponse> GetManga(int id)
+		public MangadexApi()
 		{
-			var client = new RestClient(MangadexApiUrl);
-			client.UseNewtonsoftJson();
-
-			var request = new RestRequest($"api/manga/{id}", DataFormat.Json);
-
-			var response = await client.GetAsync<MangaResponse>(request).ConfigureAwait(true);
-
-			return response;
+			RestClient = new RestClient(MangadexApiUrl);
+			RestClient.UseNewtonsoftJson();
 		}
 
-		public async Task<ChapterDetail> GetChapter(int id)
+		public async Task<Manga> GetManga(int id)
 		{
-			var client = new RestClient(MangadexApiUrl);
-			client.ThrowOnAnyError = true;
-			client.UseNewtonsoftJson();
+			var request = new RestRequest($"api/v2/manga/{id}", DataFormat.Json);
 
-			var request = new RestRequest($"api/chapter/{id}", DataFormat.Json);
+			var response = await RestClient.GetAsync<Response<Manga>>(request)
+				.ConfigureAwait(true);
 
-			var response = await client.GetAsync<ChapterDetail>(request).ConfigureAwait(true);
+			return response.Data;
+		}
 
-			return response;
+		public async Task<IEnumerable<ChapterSummary>> GetChapters(int mangaId)
+		{
+			var request = new RestRequest($"api/v2/manga/{mangaId}/chapters", DataFormat.Json);
+
+			var response = await RestClient.GetAsync<Response<Collection>>(request)
+				.ConfigureAwait(true);
+
+			return response.Data.Chapters;
+		}
+
+		public async Task<Chapter> GetChapter(int id)
+		{
+			var request = new RestRequest($"api/v2/chapter/{id}", DataFormat.Json);
+
+			var response = await RestClient.GetAsync<Response<Chapter>>(request)
+				.ConfigureAwait(true);
+
+			return response.Data;
 		}
 
 		public void GetPage(string server, string serverHash, string pageId, Stream stream)
 		{
-			var client = new RestClient(MangadexApiUrl);
-
 			var request = new RestRequest($"{server}{serverHash}/{pageId}");
 			request.ResponseWriter = responseStream => responseStream.CopyTo(stream);
 
-			client.DownloadData(request);
+			RestClient.DownloadData(request);
+		}
+
+		public async Task<IEnumerable<Group>> GetGroups(int mangaId)
+		{
+			var request = new RestRequest($"api/v2/manga/{mangaId}/chapters");
+
+			var response = await RestClient.GetAsync<Response<Collection>>(request)
+				.ConfigureAwait(true);
+
+			return response.Data.Groups;
 		}
 	}
 }

@@ -10,27 +10,29 @@ namespace Mangadex.Tool
 {
 	public static class CbzDownloader
 	{
-		public async static Task Download(int mangaId, int volume, int chapter, string language, string group)
+		public async static Task Download(int mangaId, string volume, string chapter, string language, string group)
 		{
 			try
 			{
 				var mangadex = new MangadexApi();
 				var manga = await mangadex.GetManga(mangaId);
+				var chapters = await mangadex.GetChapters(mangaId);
+				var groups = await mangadex.GetGroups(mangaId);
 
-				Console.WriteLine($"Manga: {manga.Manga.Title}");
+				Console.WriteLine($"Manga: {manga.Title}");
 				Console.WriteLine($"Volume: {volume}");
 				Console.WriteLine($"Chapter: {chapter}");
 				Console.WriteLine($"Language: {language}");
 				Console.WriteLine($"Group: {(group == null ? "Any" : group)}");
 
-				var chapterId = manga.Chapters.First(c => c.Volume == volume
-					&& c.ChapterNumber == chapter
-					&& c.LanguageName.Equals(language, StringComparison.OrdinalIgnoreCase)
-					&& (group == null || group.Equals(c.GroupName, StringComparison.OrdinalIgnoreCase))).Id;
+				var chapterId = chapters.First(c => (string.IsNullOrEmpty(c.Volume) || c.Volume.Equals(volume, StringComparison.OrdinalIgnoreCase))
+					&& c.ChapterNumber.Equals(chapter, StringComparison.OrdinalIgnoreCase)
+					&& c.Language.Equals(language, StringComparison.OrdinalIgnoreCase)
+					&& (string.IsNullOrEmpty(group) || c.Groups.Any(groupId => groupId == groups.First(g => g.Name.Equals(group, StringComparison.OrdinalIgnoreCase)).Id))).Id;
 
 				var chapterDetail = await mangadex.GetChapter(chapterId);
 
-				var path = @$"{manga.Manga.Title}/{manga.Manga.Title} - Chapter {chapter}.cbz";
+				var path = @$"{manga.Title}/[{chapterDetail.Groups.First().Name}] {manga.Title} - Chapter {chapter}.cbz";
 				Directory.CreateDirectory(Path.GetDirectoryName(path));
 
 				using var cbzFile = new FileStream(path, FileMode.Create);
@@ -41,7 +43,7 @@ namespace Mangadex.Tool
 					using (var writer = pageFile.Open())
 					{
 						Console.WriteLine($"Downloading {page}...");
-						mangadex.GetPage(chapterDetail.ServerUri.ToString(), chapterDetail.Hash, page, writer);
+						mangadex.GetPage(chapterDetail.Server, chapterDetail.Hash, page, writer);
 					}
 					Thread.Sleep(1000);
 				}
